@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的故事</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'STKaiti', cursive;
+            overflow-x: hidden;
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* 背景图片容器 */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: opacity 1s ease;
+        }
+
+        .background img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: all 1s ease;
+            filter: blur(3px);
+        }
+
+        /* 时间轴容器 */
+        .timeline-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 100px 0;
+        }
+
+        /* 时间轴 */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background: #fff;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* 时间节点 */
+        .timeline-node {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .timeline-node::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            top: 50%;
+            border: 4px solid #ff9f43;
+            right: -13px;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* 左右交替布局 */
+        .timeline-node:nth-child(even) {
+            left: 50%;
+        }
+
+        .timeline-node:nth-child(odd) {
+            left: 0;
+        }
+
+        .timeline-node:nth-child(even)::after {
+            left: -7px;
+        }
+
+        /* 内容卡片 */
+        .timeline-content {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        /* 日期样式 */
+        .date {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff9f43;
+        }
+
+        /* 图片样式 */
+        .timeline-content img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 问答部分 */
+        .question-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .question {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #ff9f43;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #f39c12;
+            transform: translateY(-2px);
+        }
+
+        /* 动画类 */
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .locked {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        /* 响应式设计 */
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+
+            .timeline-node {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+
+            .timeline-node:nth-child(even) {
+                left: 0;
+            }
+
+            .timeline-node::after {
+                left: 22px;
+            }
+
+            .timeline-node:nth-child(even)::after {
+                left: 22px;
+            }
+        }
+
+        /* 标题样式 */
+.title-container {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    text-align: center;
+    z-index: 10;
+}
+
+.main-title {
+    font-size: 4em;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 1s ease forwards;
+}
+
+.sub-title {
+    font-size: 1.5em;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 1s ease forwards 0.5s;
+}
+
+/* 向下滚动提示 */
+.scroll-hint {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: fadeInUp 1s ease forwards 1s, bounce 2s ease-in-out infinite;
+}
+
+.scroll-hint::after {
+    content: '↓';
+    font-size: 24px;
+}
+
+/* 动画关键帧 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+/* 打字机效果 */
+.typing {
+    position: relative;
+    display: inline-block;
+}
+
+.typing::after {
+    content: '|';
+    position: absolute;
+    right: -8px;
+    animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2.5em;
+    }
+    
+    .sub-title {
+        font-size: 1.2em;
+    }
+}
+
+.love-message {
+    display: inline-block;
+    width: 500px;
+    padding: 15px 30px;
+    font-size: 18px;
+    color: #fff;
+    background-color: #b9727d;
+    border-radius: 25px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto; /* 使按钮在父容器中居中 */
+        }
+
+         /* 音乐播放器 */
+         .music-player {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 0 15px rgba(255, 192, 203, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 2px solid rgba(255, 182, 193, 0.3);
+        }
+
+        .music-control {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: #ffb6c1;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-control:hover {
+            background: #ff8fa3;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加标题容器 -->
+    <div class="title-container">
+        <h1 class="main-title">回忆之旅</h1>
+        <p class="sub-title">Our Memory Journey</p>
+    </div>
+
+    <div class="music-player">
+        <button class="music-control" onclick="toggleMusic()">♫</button>
+        <div style="color: #e8a0a0;">爱，简单而美好</div>
+    </div>
+
+
+    <div class="background" id="background">
+        <!-- 背景图片将通过 JavaScript 动态添加 -->
+    </div>
+
+    <div class="timeline-container">
+        <div class="timeline" id="timeline">
+            <!-- 时间节点将通过 JavaScript 动态添加 -->
+        </div>
+    </div>
+    <div class="love-message">
+        <p>我们的故事，未完待续...</p>
+       
+    </div>
+
+    <div class="love-message">
+        
+        <p>I have a feeling about us.It's much older than you and me.</p>
+    </div>
+    <script>
+
+// 音乐播放控制
+let playlist = [
+            './songs/爱很简单.mp3',
+            './songs/angelsong.mp3',
+        ];
+        let currentSong = 0;
+        let audio = new Audio(playlist[currentSong]);
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play();
+                document.querySelector('.music-control').innerHTML = '❚❚';
+            } else {
+                audio.pause();
+                document.querySelector('.music-control').innerHTML = '♫';
+            }
+        }
+
+        // 自动播放下一首
+        audio.addEventListener('ended', function() {
+            currentSong = (currentSong + 1) % playlist.length;
+            audio.src = playlist[currentSong];
+            audio.play();
+        });
+
+
+        // 添加打字机效果函数
+function typeWriter(element, text, speed = 100) {
+    let i = 0;
+    element.innerHTML = '';
+    element.classList.add('typing');
+    
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        } else {
+            element.classList.remove('typing');
+            // 显示向下滚动提示
+            document.querySelector('.scroll-hint').style.opacity = '1';
+        }
+    }
+    
+    type();
+}
+
+// 在页面加载完成后初始化
+window.addEventListener('load', function() {
+    // 获取标题元素
+    const mainTitle = document.querySelector('.main-title');
+    const subTitle = document.querySelector('.sub-title');
+    
+    // 添加打字机效果
+    setTimeout(() => {
+        typeWriter(mainTitle, '回忆之旅', 150);
+    }, 500);
+    
+    // 监听滚动以隐藏标题
+    window.addEventListener('scroll', function() {
+        const titleContainer = document.querySelector('.title-container');
+        const scrollPosition = window.scrollY;
+        
+        if (scrollPosition > 100) {
+            titleContainer.style.opacity = Math.max(0, 1 - scrollPosition / 500);
+        }
+    });
+    
+    // 初始化时间轴
+    // initTimeline();
+});
+
+// 添加向下滚动提示
+const titleContainer = document.querySelector('.title-container');
+const scrollHint = document.createElement('div');
+scrollHint.className = 'scroll-hint';
+titleContainer.appendChild(scrollHint);
+
+
+        // 时间轴数据
+        const timelineData = [
+            {
+                date: '2024年6月1日',
+                image: './images/1.jpg',
+                description: '第一次相遇',
+                question: '那天晚上我们去了哪里？',
+                answer: '鬼笑石'
+            },
+            {
+                date: '2024年6月2日',
+                image: './images/2.jpg',
+                description: '第一次逛公园',
+                question: '我们去了哪里？',
+                answer: '圆明园'
+            },
+            {
+                date: '2024年6月14日凌晨',
+                image: './images/3.jpg',
+                description: '第一次确认关系',
+                question: '我们在哪拥吻？（四字状语）',
+                answer: '宿舍楼下'
+            },
+            {
+                date: '2024年7月11日',
+                image: './images/4.jpg',
+                description: '第一次偷袭SixGod男神',
+                question: '喜欢吗？（坏笑）',
+                answer: '喜欢'
+            },
+            {
+                date: '2024年7月20日',
+                image: './images/5.jpg',
+                description: '第一次出远门玩',
+                question: '我们去了哪里？',
+                answer: '天津'
+            },
+            {
+                date: '2024年8月18日',
+                image: './images/6.jpg',
+                description: '第一次吃到宝贝做的饭饭',
+                question: '宝贝的拿手好菜是哪个？（两个字）',
+                answer: '鸡翅'
+            },
+            {
+                date: '2024年10月2日',
+                image: './images/7.jpg',
+                description: '椰汁情侣照get',
+                question: '我们那天吃了什么让你印象深刻？',
+                answer: '海胆'
+            },
+            {
+                date: '2024年10月5日',
+                image: './images/8.jpg',
+                description: '碧海，蓝天，骄阳，睡觉',
+                question: '我们在哪里睡觉？',
+                answer: '小麦岛'
+            },
+            {
+                date: '2024年下半年',
+                image: './images/9.jpg',
+                description: '我们不停地视频',
+                question: '我截图技术好不好？（歪嘴笑）',
+                answer: '好'
+            },
+            {
+                date: '2024年-->∞',
+                image: './images/10.jpg',
+                description: '我们频繁地记录',
+                question: '无论是开心还是难过（接）',
+                answer: '我的爱一直不变'
+            },
+
+            // 添加更多节点...
+        ];
+
+        // 初始化时间轴
+        function initTimeline() {
+            const timeline = document.getElementById('timeline');
+            const background = document.getElementById('background');
+
+            // 添加背景图片
+            timelineData.forEach((data, index) => {
+                const img = document.createElement('img');
+                img.src = data.image;
+                img.id = `bg-${index}`;
+                background.appendChild(img);
+            });
+
+            // 添加时间节点
+            timelineData.forEach((data, index) => {
+                const node = createTimelineNode(data, index);
+                timeline.appendChild(node);
+                if (index > 0) {
+                    node.classList.add('locked');
+                }
+            });
+
+            // 监听滚动事件
+            window.addEventListener('scroll', handleScroll);
+        }
+
+        // 创建时间节点
+        function createTimelineNode(data, index) {
+            const node = document.createElement('div');
+            node.className = 'timeline-node';
+            node.innerHTML = `
+                <div class="timeline-content">
+                    <div class="date">${data.date}</div>
+                    <img src="${data.image}" alt="${data.description}">
+                    <p>${data.description}</p>
+                    <div class="question-section">
+                        <div class="question">${data.question}</div>
+                        <input type="text" class="answer-input" id="answer-${index}">
+                        <button class="submit-btn" onclick="checkAnswer(${index})">确认</button>
+                    </div>
+                </div>
+            `;
+            return node;
+        }
+
+        // 处理滚动事件
+        function handleScroll() {
+            const nodes = document.querySelectorAll('.timeline-node');
+            const backgrounds = document.querySelectorAll('.background img');
+            
+            nodes.forEach((node, index) => {
+                const rect = node.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight * 0.8;
+
+                if (isVisible) {
+                    node.classList.add('fade-in');
+                    updateBackground(index);
+                }
+            });
+        }
+
+        // 更新背景图片
+        function updateBackground(index) {
+            const backgrounds = document.querySelectorAll('.background img');
+            backgrounds.forEach((bg, i) => {
+                bg.style.opacity = i === index ? '1' : '0';
+            });
+        }
+
+        // 检查答案
+        function checkAnswer(index) {
+            const input = document.getElementById(`answer-${index}`);
+            const answer = input.value.trim().toLowerCase();
+            const correctAnswer = timelineData[index].answer.toLowerCase();
+
+            if (answer === correctAnswer) {
+
+                // 解锁下一个节点
+                const nextNode = document.querySelectorAll('.timeline-node')[index + 1];
+                if (nextNode) {
+                    nextNode.classList.remove('locked');
+                    nextNode.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                input.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    input.style.animation = '';
+                }, 500);
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', initTimeline);
+    </script>
+</body>
+</html>
